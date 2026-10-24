@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExcuseEase - City College Absence Portal</title>
+    <style>
+        :root {
+            --battle-green: #0f5132;
+            --battle-green-dark: #0a3622;
+            --yellow-accent: #f1c40f;
+            --yellow-hover: #d4ac0d;
+            --bg-light: #f4f7f5;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --error-red: #dc2626;
+            --success-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        button, .btn-green, .btn-start-yellow, .btn-back, .letter-item, .dropdown-content a, select, input {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        button:hover, .btn-green:hover, .btn-back:hover, .letter-item:hover {
+            transform: scale(1.03);
+        }
+
+        button:active, .btn-green:active, .btn-back:active, .letter-item:active {
+            transform: scale(1.1) !important;
+        }
+
+        @keyframes steadyPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 0 8px 20px rgba(241, 196, 15, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);
+            }
+        }
+
+        .btn-start-yellow {
+            background-color: var(--yellow-accent);
+            color: var(--text-dark);
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            animation: steadyPulse 2.2s infinite ease-in-out;
+        }
+
+        .btn-start-yellow:hover {
+            background-color: var(--yellow-hover);
+            animation-play-state: paused;
+            transform: scale(1.1);
+        }
+
+        .btn-start-yellow:active {
+            transform: scale(1.18) !important;
+        }
+
+        .error-msg {
+            color: var(--error-red);
+            font-size: 0.88rem;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: none;
+            text-align: center;
+            background-color: #fef2f2;
+            padding: 8px;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+        }
+
+        .is-invalid {
+            border-color: var(--error-red) !important;
+            background-color: #fef2f2 !important;
+        }
+
+        #landing-view {
+            background-image: url('first bggggg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: calc(100vh - 70px);
+        }
+
+        header {
+            height: 70px;
+            background-color: var(--battle-green);
+            border-bottom: 1px solid var(--battle-green-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-placeholder {
+            width: 150px;
+            height: 50px;
+            background-color: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-placeholder img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .hamburger-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .hamburger-icon span {
+            width: 25px;
+            height: 3px;
+            background-color: #ffffff;
+            border-radius: 2px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            min-width: 170px;
+            overflow: hidden;
+            z-index: 20;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: var(--text-dark);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f5f9;
+        }
+
+        .signout-btn {
+            background-color: var(--error-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: none;
+        }
+
+        .page-view {
+            display: none !important;
+            flex: 1;
+        }
+
+        .page-view.active {
+            display: flex !important;
+        }
+
+        .landing-container {
+            display: flex;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+        }
+
+        .landing-left {
+            flex: 1;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .est-text {
+            color: var(--yellow-accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .title-text {
+            color: var(--battle-green);
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .description-text {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .landing-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .bg-view {
+            position: relative;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background-image: linear-gradient(rgba(15, 81, 50, 0.50), rgba(10, 54, 34, 0.50)), url('second bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .card-container {
+            background-color: rgb(255, 255, 255);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .card-container.wide {
+            max-width: 900px;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .card-logo {
+            width: 180px;
+            height: 150px;
+            margin: 0 auto 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--battle-green);
+        }
+
+        .btn-green {
+            background-color: var(--battle-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-green:hover {
+            background-color: var(--battle-green-dark);
+        }
+
+        .btn-back {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .two-column {
+            display: flex;
+            gap: 20px;
+        }
+
+        .two-column .col {
+            flex: 1;
+        }
+
+        .program-row {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+        }
+
+        .program-row h3 {
+            color: var(--battle-green);
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .letter-item {
+            background: #fef2f2;
+            border: 1px solid var(--error-red);
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .proof-preview {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .proof-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-card h2 {
+            color: var(--battle-green);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-card p, .modal-card ul {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .modal-card ul {
+            padding-left: 1.2rem;
+        }
+
+        .modal-card li {
+            margin-bottom: 0.5rem;
+        }
+
+        .close-modal-btn {
+            background-color: var(--battle-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+            margin-top: 10px;
+        }
+
+        .close-modal-btn:hover {
+            background-color: var(--battle-green-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <div class="header-left">
+            <div class="logo-placeholder" id="header-logo">
+                <img src="image_79cf1f2c.png" alt="City College Logo">
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="signout-btn" class="signout-btn" onclick="signOut()">Sign Out</button>
+            <div class="hamburger-menu" onclick="toggleHamburgerMenu(event)">
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="dropdown-content" id="hamburger-dropdown">
+                    <a onclick="navigateTo('landing-view')">Home</a>
+                    <a id="menu-history" style="display: none;" onclick="openRoleHistory()">History</a>
+                    <a onclick="openModal('about-modal')">About Us</a>
+                    <a onclick="openModal('sdg-modal')">SDG Goal</a>
+                    <a onclick="openModal('contact-modal')">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. LANDING PAGE VIEW -->
+    <div id="landing-view" class="page-view active">
+        <div class="landing-container">
+            <div class="landing-left">
+                <div class="est-text">EST.2023</div>
+                <h1 class="title-text">City College of Cagayan de Oro</h1>
+                <p class="description-text">
+                    ExcuseEase is an official online platform for City College students to submit absence excuse letters directly to their instructors efficiently and seamlessly.
+                </p>
+                <button class="btn-start-yellow" onclick="showPage('auth-option-view')">
+                    Start <span style="font-size: 1.2rem;">&rarr;</span>
+                </button>
+            </div>
+            <div class="landing-right"></div>
+        </div>
+    </div>
+
+    <!-- 2. AUTH SELECTION VIEW -->
+    <div id="auth-option-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-logo">
+                    <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button class="btn-green" onclick="showPage('signup-view')">Sign Up</button>
+                <button class="btn-green" onclick="showPage('login-select-view')">Log In</button>
+                <button class="btn-back" onclick="showPage('landing-view')">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. SIGN UP VIEW -->
+    <div id="signup-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-logo">
+                    <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>User Role</label>
+                <select class="form-control" id="signup-role" onchange="toggleSignupFields()">
+                    <option value="student">Student</option>
+                    <option value="faculty">Teacher</option>
+                </select>
+            </div>
+
+            <!-- STUDENT SIGNUP FIELDS -->
+            <div id="student-signup-fields">
+                <div class="form-group">
+                    <label>Complete Name</label>
+                    <input type="text" class="form-control req-field" id="su-std-name" autocomplete="off">
+                </div>
+                <div class="two-column">
+                    <div class="form-group col">
+                        <label>Age</label>
+                        <input type="number" class="form-control req-field" id="su-std-age" autocomplete="off">
+                    </div>
+                    <div class="form-group col">
+                        <label>Gender</label>
+                        <select class="form-control req-field" id="su-std-gender">
+                            <option value="">-- Select --</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" class="form-control req-field" id="su-std-dob">
+                </div>
+                <div class="form-group">
+                    <label>Student ID Number</label>
+                    <input type="text" class="form-control req-field" id="su-std-id" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Year Level</label>
+                    <select class="form-control req-field" id="su-std-year">
+                        <option value="">-- Select Year --</option>
+                        <option value="1st Year College">1st Year College</option>
+                        <option value="2nd Year College">2nd Year College</option>
+                        <option value="3rd Year College">3rd Year College</option>
+                        <option value="4th Year College">4th Year College</option>
+                    </select>
+                </div>
+                
+                <!-- COLLEGE / INSTITUTE SELECTION -->
+                <div class="form-group">
+                    <label>College / Institute</label>
+                    <select class="form-control req-field" id="su-std-college" onchange="updateSignupSubPrograms()">
+                        <option value="">-- Select College / Institute --</option>
+                        <option value="COE">College of Education</option>
+                        <option value="CAS">College of Arts and Sciences</option>
+                        <option value="CBM">College of Business and Management</option>
+                        <option value="TSTI">Technical Skill & Technology Institute</option>
+                    </select>
+                </div>
+
+                <!-- SUB-PROGRAM SELECTION -->
+                <div class="form-group">
+                    <label>Program</label>
+                    <select class="form-control req-field" id="su-std-program">
+                        <option value="">-- Select College First --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control req-field" id="su-std-email" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" class="form-control req-field" id="su-std-phone" autocomplete="off">
+                </div>
+
+                <!-- NEW STUDENT PASSWORD FIELDS -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control req-field" id="su-std-pass" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" class="form-control req-field" id="su-std-confirm-pass" autocomplete="new-password" oninput="checkStudentPasswordMatch()">
+                </div>
+            </div>
+
+            <!-- FACULTY SIGNUP FIELDS -->
+            <div id="faculty-signup-fields" style="display: none;">
+                <div class="form-group">
+                    <label>Complete Name</label>
+                    <input type="text" class="form-control req-field-fac" id="su-fac-name" autocomplete="off">
+                </div>
+                <div class="two-column">
+                    <div class="form-group col">
+                        <label>Age</label>
+                        <input type="number" class="form-control req-field-fac" id="su-fac-age" autocomplete="off">
+                    </div>
+                    <div class="form-group col">
+                        <label>Gender</label>
+                        <select class="form-control req-field-fac" id="su-fac-gender">
+                            <option value="">-- Select --</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Handled Program (Select Multiple)</label>
+                    <div class="checkbox-group" id="fac-program-group">
+                        <div class="checkbox-item"><input type="checkbox" name="fac-program" value="COE"> College of Education (COE)</div>
+                        <div class="checkbox-item"><input type="checkbox" name="fac-program" value="CAS"> College of Arts and Sciences (CAS)</div>
+                        <div class="checkbox-item"><input type="checkbox" name="fac-program" value="CBM"> College of Business and Management (CBM)</div>
+                        <div class="checkbox-item"><input type="checkbox" name="fac-program" value="TSTI"> Technical Skill & Technology Institute (TSTI)</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control req-field-fac" id="su-fac-email" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control req-field-fac" id="su-fac-pass" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" class="form-control req-field-fac" id="su-fac-confirm-pass" autocomplete="new-password" oninput="checkPasswordMatch()">
+                </div>
+            </div>
+
+            <div class="error-msg" id="signup-err-msg">⚠️ There are still incomplete fields! Please fill out all required details.</div>
+
+            <button class="btn-green" onclick="processSignup()">Sign Up / Register</button>
+            <button class="btn-back" onclick="showPage('auth-option-view')">Back</button>
+        </div>
+    </div>
+
+    <!-- 4. SELECT LOGIN PORTAL TYPE VIEW -->
+    <div id="login-select-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-logo">
+                    <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button class="btn-green" onclick="showPage('student-login-view')">Student Log In</button>
+                <button class="btn-green" onclick="showPage('faculty-login-view')">Teacher Log In</button>
+                <button class="btn-back" onclick="showPage('auth-option-view')">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. STUDENT LOGIN VIEW (UPDATED TO ID & PASSWORD) -->
+    <div id="student-login-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-logo">
+                     <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Student ID Number</label>
+                <input type="text" class="form-control" id="login-std-id" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="login-std-pass" autocomplete="current-password">
+            </div>
+
+            <div class="error-msg" id="std-login-err-msg">⚠️ Please fill out all information or try again.</div>
+
+            <button class="btn-green" onclick="processStudentLogin()">Log In</button>
+            <button class="btn-back" onclick="showPage('login-select-view')">Back</button>
+        </div>
+    </div>
+
+    <!-- 6. FACULTY LOGIN VIEW -->
+    <div id="faculty-login-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-logo">
+                     <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" id="login-fac-name" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="login-fac-pass" autocomplete="current-password">
+            </div>
+
+            <div class="error-msg" id="fac-login-err-msg">⚠️ Please fill out all information or try again.</div>
+
+            <button class="btn-green" onclick="processFacultyLogin()">Log In</button>
+            <button class="btn-back" onclick="showPage('login-select-view')">Back</button>
+        </div>
+    </div>
+
+    <!-- 7. STUDENT FILL-UP FORM PAGE 1 (EXCUSE LETTER FORM) -->
+    <div id="student-form-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2>Student Information</h2>
+            </div>
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" class="form-control sf-req" id="sf-name" readonly>
+            </div>
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" class="form-control sf-req" id="sf-age">
+            </div>
+            <div class="form-group">
+                <label>Year Level</label>
+                <select class="form-control sf-req" id="sf-year">
+                    <option value="">-- Select Year --</option>
+                    <option value="1st Year College">1st Year College</option>
+                    <option value="2nd Year College">2nd Year College</option>
+                    <option value="3rd Year College">3rd Year College</option>
+                    <option value="4th Year College">4th Year College</option>
+                </select>
+            </div>
+
+            <!-- FULL WORD COLLEGE SELECTION -->
+            <div class="form-group">
+                <label>College / Institute</label>
+                <select class="form-control sf-req" id="sf-college" onchange="updateFormSubPrograms()">
+                    <option value="">-- Select College / Institute --</option>
+                    <option value="COE">College of Education</option>
+                    <option value="CAS">College of Arts and Sciences</option>
+                    <option value="CBM">College of Business and Management</option>
+                    <option value="TSTI">Technical Skill & Technology Institute</option>
+                </select>
+            </div>
+
+            <!-- SUB-PROGRAM SELECTION -->
+            <div class="form-group">
+                <label>Program</label>
+                <select class="form-control sf-req" id="sf-program">
+                    <option value="">-- Select College First --</option>
+                </select>
+            </div>
+
+            <!-- MANUAL SECTION INPUT -->
+            <div class="form-group">
+                <label>Section</label>
+                <input type="text" class="form-control sf-req" id="sf-section" placeholder="e.g. 1A, 2B, Sec 3" autocomplete="off">
+            </div>
+
+            <div class="error-msg" id="sf-err-msg">⚠️ There are still incomplete fields! Please fill out all required details.</div>
+
+            <button class="btn-green" onclick="validateStudentForm()">Next</button>
+        </div>
+    </div>
+
+    <!-- 8. STUDENT SELECT TEACHERS VIEW -->
+    <div id="student-teachers-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2>Select Teachers to Send Excuse Letter</h2>
+            </div>
+            <div class="form-group" id="teachers-checkbox-list"></div>
+            
+            <div class="error-msg" id="teacher-select-err-msg">⚠️ Please select at least one teacher.</div>
+
+            <button class="btn-green" onclick="validateTeacherSelection()">Next</button>
+        </div>
+    </div>
+
+    <!-- 9. STUDENT REASON & PROOF VIEW -->
+    <div id="student-letter-view" class="page-view bg-view">
+        <div class="card-container wide">
+            <div class="card-header">
+                <div class="card-logo" style="margin:0 auto 15px auto;">
+                     <img src="Code_Generated_Image.png" alt="City College Logo">
+                </div>
+            </div>
+            <div class="two-column">
+                <div class="col">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                        Instruction: Please compose your excuse letter formally in English detailing the reason for your absence.
+                    </p>
+                    <textarea class="form-control" id="excuse-letter-text" rows="8" placeholder="Write your letter here..."></textarea>
+                </div>
+                <div class="col">
+                    <label>Proof of Excuse (Attach Photo):</label>
+                    <input type="file" class="form-control" id="proof-image-input" accept="image/*" onchange="previewProofImage(event)">
+                    <div class="proof-preview" id="proof-preview-box">
+                        [ Image Preview ]
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-msg" id="letter-err-msg">⚠️ An Excuse Letter and a Proof Image are required!</div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-green" style="max-width: 300px;" onclick="submitExcuseLetter()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. STUDENT RECEIPT VIEW -->
+    <div id="student-receipt-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2>Submission Receipt</h2>
+            </div>
+            <div style="line-height: 1.8; margin-bottom: 20px;">
+                <p><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
+                <p><strong>Student Name:</strong> <span id="rcp-name"></span></p>
+                <p><strong>Time:</strong> <span id="rcp-time"></span></p>
+                <p><strong>Date:</strong> <span id="rcp-date"></span></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-back" onclick="showPage('landing-view')">Back to Home</button>
+                <button class="btn-green" onclick="showPage('student-history-view')">Review History</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. STUDENT HISTORY VIEW -->
+    <div id="student-history-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2>Excuse Letter History</h2>
+            </div>
+            <div id="student-history-list"></div>
+            <button class="btn-back" style="margin-top:15px;" onclick="showPage('landing-view')">Back</button>
+        </div>
+    </div>
+
+    <!-- 12. TEACHER DASHBOARD VIEW -->
+    <div id="teacher-dashboard-view" class="page-view bg-view">
+        <div class="card-container wide">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Teacher Dashboard</h2>
+                <button class="btn-green" style="width: auto; padding: 8px 16px;" onclick="showPage('teacher-history-view')">Search History</button>
+            </div>
+            <div id="teacher-rows-container"></div>
+            <button class="btn-back" onclick="showPage('landing-view')">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- 13. TEACHER REVIEW EXCUSE LETTER VIEW -->
+    <div id="teacher-review-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2 id="rev-std-name">Student Name</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);"><span id="rev-date"></span> | <span id="rev-time"></span></p>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label><strong>Excuse Letter:</strong></label>
+                <p id="rev-letter-body" style="background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid var(--border-color);"></p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label><strong>Proof Document:</strong></label>
+                <div class="proof-preview" id="rev-proof-box"></div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-back" onclick="showPage('teacher-dashboard-view')">Back</button>
+                <button class="btn-green" onclick="approveExcuse()">Approve</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 14. TEACHER HISTORY SEARCH VIEW -->
+    <div id="teacher-history-view" class="page-view bg-view">
+        <div class="card-container">
+            <div class="card-header">
+                <h2>Approved History</h2>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="search-history-input" placeholder="Search student name..." onkeyup="filterTeacherHistory()" autocomplete="off">
+            </div>
+            <div id="teacher-history-list"></div>
+            <button class="btn-back" style="margin-top: 15px;" onclick="showPage('teacher-dashboard-view')">Back</button>
+        </div>
+    </div>
+
+    <!-- POPUP MODALS FOR ABOUT, SDG, & CONTACT US -->
+    
+    <!-- ABOUT US MODAL -->
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-card">
+            <h2>About ExcuseEase</h2>
+            <p><strong>ExcuseEase</strong> is an official digital absence management portal specifically designed for <strong>City College of Cagayan de Oro</strong>.</p>
+            <p>Our platform bridges the gap between students and faculty members by providing a hassle-free, paperless, and organized system for submitting and approving official excuse letters.</p>
+            <p>Key Benefits:</p>
+            <ul>
+                <li>Fast and direct online submission to instructors.</li>
+                <li>Digital attachment of valid medical or personal excuse proofs.</li>
+                <li>Real-time tracking of submission status and history review.</li>
+                <li>Secure environment protecting student and teacher data privacy.</li>
+            </ul>
+            <button class="close-modal-btn" onclick="closeModal('about-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- SDG MODAL -->
+    <div class="modal-overlay" id="sdg-modal">
+        <div class="modal-card">
+            <h2>Sustainable Development Goals (SDG)</h2>
+            <p>ExcuseEase supports the United Nations Sustainable Development Goals (SDGs) to promote better education and institutional sustainability:</p>
+            <ul>
+                <li><strong>SDG 4: Quality Education</strong> - Ensures inclusive and equitable quality education by minimizing classroom disruptions and maintaining clear communication regarding student attendance.</li>
+                <li><strong>SDG 9: Industry, Innovation, and Infrastructure</strong> - Fosters digital transformation within the academic institution through modernized administrative workflows.</li>
+                <li><strong>SDG 12: Responsible Consumption and Production</strong> - Reduces paper consumption significantly by shifting traditional paper-based excuse slips into digital submissions.</li>
+            </ul>
+            <button class="close-modal-btn" onclick="closeModal('sdg-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- CONTACT US MODAL -->
+    <div class="modal-overlay" id="contact-modal">
+        <div class="modal-card">
+            <h2>Contact Us</h2>
+            <p>Have questions, concerns, or technical issues with ExcuseEase? Reach out to our support team:</p>
+            <div style="line-height: 1.8; margin-top: 10px;">
+                <p>📧 <strong>Email Support:</strong> support.excuseease@citycollegecdo.edu.ph</p>
+                <p>📞 <strong>Phone/Hotline:</strong> +63 (088) 123-4567 / 0912-345-6789</p>
+                <p>📍 <strong>Office Address:</strong> Office of Student Affairs, City College of Cagayan de Oro, Northern Mindanao, Philippines</p>
+                <p>⏰ <strong>Office Hours:</strong> Monday – Friday (8:00 AM – 5:00 PM)</p>
+            </div>
+            <button class="close-modal-btn" onclick="closeModal('contact-modal')">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let registeredUsers = [];
+        let submittedExcuses = [];
+        let currentUser = null;
+        let selectedExcuseForReview = null;
+        let proofImageBase64 = '';
+
+        const programOptionsMap = {
+            'COE': [
+                { value: 'BTLED', text: 'Bachelor of Technology & Livelihood Education' },
+                { value: 'BTVTED', text: 'Bachelor of Technical Vocational Teacher Education' }
+            ],
+            'CAS': [
+                { value: 'BACOMM', text: 'Bachelor of Arts in Communication' }
+            ],
+            'CBM': [
+                { value: 'BSOA', text: 'Bachelor of Science in Office Administration' },
+                { value: 'BSE', text: 'Bachelor of Science in Entrepreneurship' }
+            ],
+            'TSTI': [
+                { value: 'Carpentry NC II', text: 'Carpentry NC II' },
+                { value: 'Electrical Installation & Maintenance NC II', text: 'Electrical Installation & Maintenance NC II' },
+                { value: 'Housekeeping NC II', text: 'Housekeeping NC II' },
+                { value: 'Barangay Health Services NC II', text: 'Barangay Health Services NC II' },
+                { value: 'Shielded Metal Arc Welding NC I', text: 'Shielded Metal Arc Welding NC I' },
+                { value: 'Shielded Metal Arc Welding NC II', text: 'Shielded Metal Arc Welding NC II' },
+                { value: 'Plumbing NC II', text: 'Plumbing NC II' }
+            ]
+        };
+
+        function toggleHamburgerMenu(e) {
+            e.stopPropagation();
+            document.getElementById('hamburger-dropdown').classList.toggle('show');
+        }
+
+        window.onclick = function() {
+            const dropdown = document.getElementById('hamburger-dropdown');
+            if (dropdown && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        };
+
+        function navigateTo(pageId) {
+            document.getElementById('hamburger-dropdown').classList.remove('show');
+            showPage(pageId);
+        }
+
+        function openModal(modalId) {
+            document.getElementById('hamburger-dropdown').classList.remove('show');
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function openRoleHistory() {
+            document.getElementById('hamburger-dropdown').classList.remove('show');
+            if (!currentUser) return;
+
+            if (currentUser.role === 'student') {
+                updateStudentHistoryList();
+                showPage('student-history-view');
+            } else if (currentUser.role === 'faculty') {
+                renderTeacherHistory();
+                showPage('teacher-history-view');
+            }
+        }
+
+        function clearAllForms() {
+            document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], textarea').forEach(input => {
+                input.value = '';
+            });
+
+            document.querySelectorAll('input[type="file"]').forEach(fileInput => {
+                fileInput.value = '';
+            });
+
+            document.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+
+            proofImageBase64 = '';
+            const previewBox = document.getElementById('proof-preview-box');
+            if (previewBox) {
+                previewBox.innerHTML = '[ Image Preview ]';
+            }
+
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+
+            const signOutBtn = document.getElementById('signout-btn');
+            const menuHistory = document.getElementById('menu-history');
+
+            if (currentUser) {
+                signOutBtn.style.display = 'block';
+                menuHistory.style.display = 'block';
+            } else {
+                signOutBtn.style.display = 'none';
+                menuHistory.style.display = 'none';
+            }
+        }
+
+        function signOut() {
+            currentUser = null;
+            clearAllForms();
+            showPage('landing-view');
+        }
+
+        function toggleSignupFields() {
+            const role = document.getElementById('signup-role').value;
+            if (role === 'student') {
+                document.getElementById('student-signup-fields').style.display = 'block';
+                document.getElementById('faculty-signup-fields').style.display = 'none';
+            } else {
+                document.getElementById('student-signup-fields').style.display = 'none';
+                document.getElementById('faculty-signup-fields').style.display = 'block';
+            }
+        }
+
+        function updateSignupSubPrograms() {
+            const college = document.getElementById('su-std-college').value;
+            const progSelect = document.getElementById('su-std-program');
+            progSelect.innerHTML = '<option value="">-- Select Program --</option>';
+
+            if (college && programOptionsMap[college]) {
+                programOptionsMap[college].forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt.value;
+                    el.textContent = opt.text;
+                    progSelect.appendChild(el);
+                });
+            }
+        }
+
+        function updateFormSubPrograms() {
+            const college = document.getElementById('sf-college').value;
+            const progSelect = document.getElementById('sf-program');
+            progSelect.innerHTML = '<option value="">-- Select Program --</option>';
+
+            if (college && programOptionsMap[college]) {
+                programOptionsMap[college].forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt.value;
+                    el.textContent = opt.text;
+                    progSelect.appendChild(el);
+                });
+            }
+        }
+
+        function checkStudentPasswordMatch() {
+            const pass = document.getElementById('su-std-pass').value;
+            const confirmPass = document.getElementById('su-std-confirm-pass');
+            if (confirmPass.value !== pass) {
+                confirmPass.classList.add('is-invalid');
+            } else {
+                confirmPass.classList.remove('is-invalid');
+            }
+        }
+
+        function checkPasswordMatch() {
+            const pass = document.getElementById('su-fac-pass').value;
+            const confirmPass = document.getElementById('su-fac-confirm-pass');
+            if (confirmPass.value !== pass) {
+                confirmPass.classList.add('is-invalid');
+            } else {
+                confirmPass.classList.remove('is-invalid');
+            }
+        }
+
+        function processSignup() {
+            const role = document.getElementById('signup-role').value;
+            const errBox = document.getElementById('signup-err-msg');
+            let isValid = true;
+
+            if (role === 'student') {
+                const fields = document.querySelectorAll('#student-signup-fields .req-field');
+                fields.forEach(f => {
+                    if (!f.value.trim()) {
+                        f.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        f.classList.remove('is-invalid');
+                    }
+                });
+
+                const stdPass = document.getElementById('su-std-pass').value;
+                const stdConfirmPass = document.getElementById('su-std-confirm-pass').value;
+                if (stdPass !== stdConfirmPass) {
+                    document.getElementById('su-std-confirm-pass').classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    errBox.style.display = 'block';
+                    return;
+                }
+
+                errBox.style.display = 'none';
+                registeredUsers.push({
+                    role: 'student',
+                    name: document.getElementById('su-std-name').value.trim(),
+                    id: document.getElementById('su-std-id').value.trim(),
+                    password: stdPass,
+                    age: document.getElementById('su-std-age').value,
+                    gender: document.getElementById('su-std-gender').value,
+                    year: document.getElementById('su-std-year').value,
+                    college: document.getElementById('su-std-college').value,
+                    program: document.getElementById('su-std-program').value,
+                    email: document.getElementById('su-std-email').value,
+                    phone: document.getElementById('su-std-phone').value
+                });
+            } else {
+                const fields = document.querySelectorAll('.req-field-fac');
+                fields.forEach(f => {
+                    if (!f.value.trim()) {
+                        f.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        f.classList.remove('is-invalid');
+                    }
+                });
+
+                const selectedPrograms = Array.from(document.querySelectorAll('input[name="fac-program"]:checked')).map(cb => cb.value);
+                const programGrp = document.getElementById('fac-program-group');
+
+                if (selectedPrograms.length === 0) {
+                    programGrp.style.border = "1.5px solid var(--error-red)";
+                    programGrp.style.padding = "5px";
+                    programGrp.style.borderRadius = "6px";
+                    isValid = false;
+                } else {
+                    programGrp.style.border = "none";
+                }
+
+                const pass = document.getElementById('su-fac-pass').value;
+                const confirmPass = document.getElementById('su-fac-confirm-pass').value;
+                if (pass !== confirmPass) {
+                    document.getElementById('su-fac-confirm-pass').classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    errBox.style.display = 'block';
+                    return;
+                }
+
+                errBox.style.display = 'none';
+                registeredUsers.push({
+                    role: 'faculty',
+                    name: document.getElementById('su-fac-name').value.trim(),
+                    password: pass,
+                    programs: selectedPrograms
+                });
+            }
+
+            alert('Account created successfully! Please log in.');
+            clearAllForms();
+            showPage('login-select-view');
+        }
+
+        function processStudentLogin() {
+            const idInput = document.getElementById('login-std-id');
+            const passInput = document.getElementById('login-std-pass');
+            const errBox = document.getElementById('std-login-err-msg');
+
+            let isValid = true;
+            [idInput, passInput].forEach(el => {
+                if (!el.value.trim()) {
+                    el.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    el.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                errBox.style.display = 'block';
+                return;
+            }
+
+            const user = registeredUsers.find(u => u.role === 'student' && u.id === idInput.value.trim() && u.password === passInput.value.trim());
+
+            if (user) {
+                currentUser = user;
+                errBox.style.display = 'none';
+                
+                document.getElementById('sf-name').value = user.name;
+                document.getElementById('sf-age').value = user.age;
+                if (user.year) document.getElementById('sf-year').value = user.year;
+                if (user.college) {
+                    document.getElementById('sf-college').value = user.college;
+                    updateFormSubPrograms();
+                    if (user.program) document.getElementById('sf-program').value = user.program;
+                }
+
+                idInput.value = '';
+                passInput.value = '';
+
+                showPage('student-form-view');
+            } else {
+                idInput.classList.add('is-invalid');
+                passInput.classList.add('is-invalid');
+                errBox.textContent = "⚠️ Incorrect ID Number or Password. Please check your credentials or sign up first.";
+                errBox.style.display = 'block';
+            }
+        }
+
+        function processFacultyLogin() {
+            const nameInput = document.getElementById('login-fac-name');
+            const passInput = document.getElementById('login-fac-pass');
+            const errBox = document.getElementById('fac-login-err-msg');
+
+            let isValid = true;
+            [nameInput, passInput].forEach(el => {
+                if (!el.value.trim()) {
+                    el.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    el.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                errBox.style.display = 'block';
+                return;
+            }
+
+            const user = registeredUsers.find(u => u.role === 'faculty' && u.name.toLowerCase() === nameInput.value.trim().toLowerCase() && u.password === passInput.value.trim());
+
+            if (user) {
+                currentUser = user;
+                errBox.style.display = 'none';
+
+                nameInput.value = '';
+                passInput.value = '';
+
+                renderTeacherDashboard();
+                showPage('teacher-dashboard-view');
+            } else {
+                nameInput.classList.add('is-invalid');
+                passInput.classList.add('is-invalid');
+                errBox.textContent = "⚠️ Incorrect Name or Password. Please check your credentials or sign up first.";
+                errBox.style.display = 'block';
+            }
+        }
+
+        function validateStudentForm() {
+            const fields = document.querySelectorAll('.sf-req');
+            const errBox = document.getElementById('sf-err-msg');
+            let isValid = true;
+
+            fields.forEach(f => {
+                if (!f.value.trim()) {
+                    f.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    f.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                errBox.style.display = 'block';
+                return;
+            }
+
+            errBox.style.display = 'none';
+            const college = document.getElementById('sf-college').value;
+            const list = document.getElementById('teachers-checkbox-list');
+            list.innerHTML = '';
+            const eligibleTeachers = registeredUsers.filter(u => u.role === 'faculty' && u.programs.includes(college));
+
+            if (eligibleTeachers.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted);">No teachers available for this program/college yet. Please register a teacher first.</p>';
+            } else {
+                eligibleTeachers.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `<input type="checkbox" name="selected-teachers" value="${t.name}"> ${t.name}`;
+                    list.appendChild(item);
+                });
+            }
+
+            showPage('student-teachers-view');
+        }
+
+        function validateTeacherSelection() {
+            const selectedTeachers = Array.from(document.querySelectorAll('input[name="selected-teachers"]:checked'));
+            const errBox = document.getElementById('teacher-select-err-msg');
+
+            if (selectedTeachers.length === 0) {
+                errBox.style.display = 'block';
+                return;
+            }
+
+            errBox.style.display = 'none';
+            showPage('student-letter-view');
+        }
+
+        function previewProofImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    proofImageBase64 = e.target.result;
+                    document.getElementById('proof-preview-box').innerHTML = `<img src="${proofImageBase64}">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function submitExcuseLetter() {
+            const letterInput = document.getElementById('excuse-letter-text');
+            const proofInput = document.getElementById('proof-image-input');
+            const errBox = document.getElementById('letter-err-msg');
+
+            let isValid = true;
+
+            if (!letterInput.value.trim()) {
+                letterInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                letterInput.classList.remove('is-invalid');
+            }
+
+            if (!proofImageBase64) {
+                proofInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                proofInput.classList.remove('is-invalid');
+            }
+
+            if (!isValid) {
+                errBox.style.display = 'block';
+                return;
+            }
+
+            errBox.style.display = 'none';
+            const selectedTeachers = Array.from(document.querySelectorAll('input[name="selected-teachers"]:checked')).map(cb => cb.value);
+            const now = new Date();
+
+            const excuseObj = {
+                id: Date.now(),
+                studentName: currentUser.name,
+                college: document.getElementById('sf-college').value,
+                program: document.getElementById('sf-program').value,
+                section: document.getElementById('sf-section').value.trim(),
+                teachers: selectedTeachers,
+                letter: letterInput.value.trim(),
+                proof: proofImageBase64,
+                time: now.toLocaleTimeString(),
+                date: now.toLocaleDateString(),
+                status: 'pending'
+            };
+
+            submittedExcuses.push(excuseObj);
+
+            document.getElementById('rcp-name').textContent = excuseObj.studentName;
+            document.getElementById('rcp-time').textContent = excuseObj.time;
+            document.getElementById('rcp-date').textContent = excuseObj.date;
+
+            updateStudentHistoryList();
+            showPage('student-receipt-view');
+        }
+
+        function updateStudentHistoryList() {
+            const container = document.getElementById('student-history-list');
+            container.innerHTML = '';
+
+            const myExcuses = submittedExcuses.filter(e => e.studentName === currentUser.name);
+
+            if (myExcuses.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No history available.</p>';
+                return;
+            }
+
+            myExcuses.forEach(e => {
+                const item = document.createElement('div');
+                item.style.padding = '10px';
+                item.style.borderBottom = '1px solid #cbd5e1';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+
+                const statusColor = e.status === 'approved' ? 'green' : '#d97706';
+                const statusSymbol = e.status === 'approved' ? '✓ Approved' : 'Pending';
+
+                item.innerHTML = `
+                    <div>
+                        <strong>Teachers:</strong> ${e.teachers.join(', ')}<br>
+                        <small>${e.date} | ${e.time}</small>
+                    </div>
+                    <div style="color: ${statusColor}; font-weight: bold;">
+                        ${statusSymbol}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderTeacherDashboard() {
+            const container = document.getElementById('teacher-rows-container');
+            container.innerHTML = '';
+
+            const mapFullNames = {
+                'COE': 'College of Education (COE)',
+                'CAS': 'College of Arts and Sciences (CAS)',
+                'CBM': 'College of Business and Management (CBM)',
+                'TSTI': 'Technical Skill & Technology Institute (TSTI)'
+            };
+
+            currentUser.programs.forEach(programCode => {
+                const row = document.createElement('div');
+                row.className = 'program-row';
+
+                const title = document.createElement('h3');
+                title.textContent = mapFullNames[programCode] || programCode;
+                row.appendChild(title);
+
+                const pendingList = submittedExcuses.filter(e => 
+                    e.college === programCode && 
+                    e.teachers.includes(currentUser.name) && 
+                    e.status === 'pending'
+                );
+
+                if (pendingList.length === 0) {
+                    row.innerHTML += '<p style="color: var(--text-muted); font-size: 0.9rem;">No pending excuse letters.</p>';
+                } else {
+                    pendingList.forEach(e => {
+                        const item = document.createElement('div');
+                        item.className = 'letter-item';
+                        item.innerHTML = `
+                            <span><strong>${e.studentName}</strong> (${e.program} - ${e.section})</span>
+                            <small>${e.time}</small>
+                        `;
+                        item.onclick = () => openTeacherReview(e);
+                        row.appendChild(item);
+                    });
+                }
+
+                container.appendChild(row);
+            });
+        }
+
+        function openTeacherReview(excuse) {
+            selectedExcuseForReview = excuse;
+            document.getElementById('rev-std-name').textContent = `${excuse.studentName} (${excuse.program} - ${excuse.section})`;
+            document.getElementById('rev-date').textContent = excuse.date;
+            document.getElementById('rev-time').textContent = excuse.time;
+            document.getElementById('rev-letter-body').textContent = excuse.letter;
+            document.getElementById('rev-proof-box').innerHTML = `<img src="${excuse.proof}">`;
+
+            showPage('teacher-review-view');
+        }
+
+        function approveExcuse() {
+            if (selectedExcuseForReview) {
+                selectedExcuseForReview.status = 'approved';
+                renderTeacherDashboard();
+                renderTeacherHistory();
+                showPage('teacher-dashboard-view');
+            }
+        }
+
+        function renderTeacherHistory() {
+            const container = document.getElementById('teacher-history-list');
+            container.innerHTML = '';
+
+            const approvedList = submittedExcuses.filter(e => 
+                e.teachers.includes(currentUser.name) && 
+                e.status === 'approved'
+            );
+
+            if (approvedList.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No approved history yet.</p>';
+                return;
+            }
+
+            approvedList.forEach(e => {
+                const item = document.createElement('div');
+                item.className = 'letter-item';
+                item.style.borderColor = 'var(--success-green)';
+                item.style.backgroundColor = '#f0fdf4';
+                item.innerHTML = `
+                    <span><strong>${e.studentName}</strong> (${e.program} - ${e.section})</span>
+                    <small>${e.date}</small>
+                `;
+                item.onclick = () => openTeacherReview(e);
+                container.appendChild(item);
+            });
+        }
+
+        function filterTeacherHistory() {
+            const query = document.getElementById('search-history-input').value.toLowerCase();
+            const items = document.querySelectorAll('#teacher-history-list .letter-item');
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
